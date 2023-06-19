@@ -1,4 +1,4 @@
-#pragma MIME application/vnd.sqlite3
+#pragma MIME application/x-sqlite3
 
 struct SQLiteHeader {
     char Magic[15];
@@ -19,6 +19,12 @@ struct SQLiteHeader {
     be u32 CacheSize;
     be u32 PageNumberLargestRootPage;
     be u32 TextEncoding;
+    be u32 UserVersionNumber;
+    be u32 IncrementalVacuumMode;
+    be u32 ApplicationID;
+    padding[20];
+    be u32 VersionChangeNumber;
+    be u32 VersionNumber;
 };
 
 struct SQLiteStruct {
