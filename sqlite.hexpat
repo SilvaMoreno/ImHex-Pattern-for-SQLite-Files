@@ -3,7 +3,7 @@
 struct SQLiteHeader {
     char Magic[15];
     padding[1];
-    u16 PageSize;
+    be u16 PageSize;
     u8 FileFormatWrite;
     u8 FileFormatRead;
     u8 SizeReservedForExtensionsPerPage;
