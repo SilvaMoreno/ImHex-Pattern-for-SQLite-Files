@@ -21,3 +21,10 @@ PRAGMA table_list;
 PRAGMA user_version;
 
 PRAGMA encoding;
+
+
+-- Examining the root page
+
+select rowid, * from sqlite_schema
+
+
