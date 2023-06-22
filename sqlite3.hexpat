@@ -1,6 +1,7 @@
 #pragma MIME application/x-sqlite3
 #pragma endian big
-#pragma array_limit 655363334
+#pragma array_limit 1310727789
+#pragma pattern_limit 13109087
 
 #include <std/io.pat>
 #include <type/leb128.pat>
@@ -22,15 +23,18 @@ enum Encode: u32 {
 };
 
 enum PageType: u8 {
-     cell_table_leaf = 0x0d,
-     cell_table_interior = 0x05,
-     cell_index_leaf = 0x0a,
-     cell_index_interior = 0x02
+    cell_table_leaf = 0x0d,
+    cell_table_interior = 0x05,
+    cell_index_leaf = 0x0a,
+    cell_index_interior = 0x02
 };
 
 struct cell_payload {
     type::uLEB128 len_header_and_len;
-   // type::uLEB128 column_serials[len_header_and_len - 1];
+    
+    //if (len_header_and_len < 2) {
+    //type::uLEB128 column_serials[len_header_and_len - 1];
+    //}
 };
 
 
@@ -42,9 +46,14 @@ struct table_leaf {
 };
 
 struct cell_table_leaf {
+    u32 start_of_page = addressof(this) - 8;
+    if (start_of_page < 512) {
+        start_of_page = 0;
+    }
+    std::print("start page: {}", start_of_page);
     u16 ofs_body;
     
-    table_leaf cell @ ofs_body;    
+    table_leaf body @ start_of_page + ofs_body;    
 };
 
 // ------------------
@@ -54,13 +63,13 @@ struct table_interior {
     
     u32 offset = len_page * (left_child_page - 1);
     
-     btree_page pages @ offset;
+    btree_page page @ offset;
 };
 
 struct cell_table_interior {
     u16 ofs_body;
     
-    table_interior cell @ ofs_body;
+    table_interior body @ ofs_body;
 };
 
 // ------------------
@@ -79,13 +88,17 @@ struct btree_page {
         (PageType::cell_table_leaf): {
             // type::uLEB128 len_payload @  cells[0].ofs_body;
             // type::uLEB128  row_id;
-            cell_table_leaf cell[num_cells];
+            cell_table_leaf cells[num_cells];
         }
         (PageType::cell_table_interior): {
-            cell_table_interior cell[num_cells];
+            cell_table_interior cells[num_cells];
         }
-        (PageType::cell_index_leaf): {}
-        (PageType::cell_index_interior): {}
+        (PageType::cell_index_leaf): {
+            std::print("Not implimented cell_index_leaf");
+        }
+        (PageType::cell_index_interior): {
+            std::print("Not implimented cell_index_leaf");
+        }
         
     }
 };
@@ -142,7 +155,8 @@ struct database_header {
 
 struct file {
     database_header header;
-    btree_page pages;
+    btree_page root_page;
 };
 
 file SQLite @ 0x00;
+// u32 ddd @ 0x190E;
