@@ -34,6 +34,31 @@ enum PageType: u8 {
     cell_index_interior = 0x02
 };
 
+fn decimalToBinary(s32 num) {   
+    if (num == 0) {
+        return "0000000";
+    }
+   
+   u32 binaryNum[32]; 
+   u32 i = 0;
+   
+   while (num > 0) {
+      binaryNum[i] = num % 2;
+      num = num / 2;
+      i = i + 1;
+   }
+   
+   char binary[8];
+   
+
+   for (s32 j = i-1, j >= 0, j = j - 1) {
+      std::print("binary = {}", binaryNum[j]);
+      //binary[1] = std::string::to_string(binaryNum[j]);
+    }
+    
+      std::print("binary = {}", binaryNum);
+};
+
 
 fn read_varint(u32 offset) {
     u32 index = 0;
@@ -47,6 +72,9 @@ fn read_varint(u32 offset) {
         values[index] = varint;
         values_offset[index] = current_offset;
         type::Bin<u8> binNumber = varint;
+        //decimalToBinary(varint);
+        //std::print("binNumber = {}", binNumber);
+        //std::print("varint indix {}  = {}", index, varint);
         
         if (varint < 0x80) {
               current_offset = 0;
@@ -55,10 +83,13 @@ fn read_varint(u32 offset) {
         }
         index = index + 1;
     }
+     //std::print("values = {} ", values);
+     //std::print("index= {} ", index);
     
     u32 value;
     
     for (u8 i = 0, i <= index - 1, i = i + 1) {
+         //std::print("i = {} ", i);
         if (index <= 3) {
             if (i == index - 1) {
                 value = value + values[i];
@@ -68,18 +99,32 @@ fn read_varint(u32 offset) {
         } else {
             value = value + ((values[i] - 0x80) * std::math::pow(0x80, i +1));
         }
+        
+         //std::print("value on index {} val {} = {} ", i, values[i], value);
     }
+    
+   // std::print("value total = {} ", value);
     
     return value;
     
 };
 
 
+
 struct cell_payload {
+     
+    //type::uLEB128 len_header_and_len;
+    // u32 real_len_header_and_len = read_varint(addressof(this));
+     //std::print("real_len_header_and_len= {}", real_len_header_and_len);
+    
     u16 count = std::mem::read_unsigned(addressof(this), 1, std::core::get_endian());
     std::print("count array payload {}", count);
     //type::uLEB128 header[count];
     u8 header[count];
+
+        //if (len_header_and_len < 2) {
+    //type::uLEB128 column_serials[len_header_and_len - 1];
+    //}
 };
 
 
@@ -92,12 +137,18 @@ struct table_leaf {
      
      type::uLEB128 row_id;
      
-
+     //u32 real_len_header_and_len = read_varint(addressof(this));
+     //std::print("real_len_header_and_len= {}", real_len_header_and_len);
+     
+        
     u16 count = std::mem::read_unsigned(addressof(this), 1, std::core::get_endian());
     std::print("olaee {}", count);
      
     cell_payload payload;
-
+    //type::uLEB128 header[real_len_header_and_len];
+    
+   // 
+     
     char content[real_len_payload];
     
     u32 overflow_page;
@@ -121,10 +172,19 @@ struct index_leaf {
      u32 real_len_payload = read_varint(addressof(this));
      std::print("real_len_payload = {}", real_len_payload);
      
- 
+     //type::uLEB128 row_id;
+     
+     //u32 real_len_header_and_len = read_varint(addressof(this));
+     //std::print("real_len_header_and_len= {}", real_len_header_and_len);
+     
+        
     u16 count = std::mem::read_unsigned(addressof(this), 1, std::core::get_endian());
+    std::print("olaee {}", count);
      
     cell_payload payload;
+    //type::uLEB128 header[real_len_header_and_len];
+    
+   // 
      
     char content[real_len_payload];
     
@@ -172,6 +232,8 @@ struct btree_page {
     
     match (page_type) {
         (PageType::cell_table_leaf): {
+            // type::uLEB128 len_payload @  cells[0].ofs_body;
+            // type::uLEB128  row_id;
             cell_table_leaf cells[num_cells];
         }
         (PageType::cell_table_interior): {
@@ -247,6 +309,9 @@ struct file {
     btree_page page3 @ len_page * 3;
     btree_page page4 @ len_page * 4;
     btree_page page5 @ len_page * 5;
+    //btree_page page6 @ len_page * 6;
+    // u8 nun = 3;
 };
 
 file SQLite @ 0x00;
+// u32 ddd @ 69607;
